@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"github.com/BurntSushi/toml"
 	"io"
 	"io/ioutil"
@@ -46,12 +46,15 @@ func parseConfig(r io.Reader) (Config, error) {
 	if _, err := toml.Decode(string(data), &config); err != nil {
 		return Config{}, err
 	}
-	fmt.Printf("Config is %+v\n", config)
 
-	// Check mandatory fields.
-	// if config.Username == "" || config.Password == "" || config.ClientID == "" || config.Secret == "" {
-	//	return botConfig{}, errors.New("usename/password/client_id/secret cannot be null")
-	//}
+	switch {
+	case config.WebsiteDir == "":
+		return Config{}, errors.New("WebsiteDir is empty")
+	case config.ChallengesDir == "":
+		return Config{}, errors.New("ChallengesDir is empty")
+	case config.TemplateDir == "":
+		return Config{}, errors.New("TemplateDir is empty")
+	}
 
 	return config, nil
 }
