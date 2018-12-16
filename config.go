@@ -18,14 +18,14 @@ type Config struct {
 	WebsiteDir string `toml:"website_dir"`
 
 	// Directory where osprogramadores/op-desafios is cloned.
-	DesafiosDir string `toml:"desafios_dir"`
+	ChallengesDir string `toml:"challenges_dir"`
 
 	// Go Template directory.
 	TemplateDir string `toml:"template_dir"`
 
-	// points per desafio. This is a map where they key is taken from
-	// desafio-"nn" (currently a number but could be anything in the future)
-	// and the value is the number of points this desafio is worth.
+	// Points per challenge. This is a map where they key is taken from the
+	// challenge name (currently a number but could be anything in the future)
+	// and the value is the number of points this challenge is worth.
 	Points map[string]Point `toml:"points"`
 
 	// Ignore these usernames (admins, and others that don't benefit

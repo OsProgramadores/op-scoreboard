@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	// Glob matching desafios.
-	desafiosGlob = "./desafio-*/*"
+	// Glob matching challenges directory.
+	// Common syntax is <anything>-<challenge_name_or_number>/author
+	challengesGlob = "./desafio-*/*"
 )
 
 // player holds all data from the contestants.
@@ -49,7 +50,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	challenges, err := readChallenges(config.DesafiosDir)
+	challenges, err := readChallenges(config.ChallengesDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,7 +89,7 @@ func main() {
 func readChallenges(ddir string) ([]playerChallenge, error) {
 	var ret []playerChallenge
 
-	dpaths, err := filepath.Glob(filepath.Join(ddir, desafiosGlob))
+	dpaths, err := filepath.Glob(filepath.Join(ddir, challengesGlob))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +104,7 @@ func readChallenges(ddir string) ([]playerChallenge, error) {
 	return ret, nil
 }
 
-// parsePath parses a path under DesafiosDir and returns the user and
+// parsePath parses a path under challengesDir and returns the user and
 // designation of that particular challenge (or error). This function assumes
 // that directories under path are laid out as desafio-NN/username
 func parsePath(path string) (string, string, error) {
