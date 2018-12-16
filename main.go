@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	//"github.com/davecgh/go-spew/spew"
+	"github.com/davecgh/go-spew/spew"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,14 +23,16 @@ type playerChallenge struct {
 	challenge string
 }
 
-// playerScore holds scores for one particular player.
+// playerScore holds the total number of points and completed challenges for
+// one particular player.
 type playerScore struct {
 	points    int
 	completed []string
 }
 
-// player holds all data from the contestants.
-type playerInfo struct {
+// scoreboardEntry holds one entry in the scoreboard. It contains all
+// information required to emit output for this player.
+type scoreboardEntry struct {
 	fullName   string
 	githubUser string
 	avatarURL  string
@@ -82,7 +84,7 @@ func main() {
 		scores[c.username] = s
 	}
 
-	//spew.Dump(scoresToPlayer(scores))
+	spew.Dump(scoresToPlayer(scores))
 }
 
 // readChallenges reads all relevant directories under ddir and
@@ -143,23 +145,23 @@ func inSlice(sl []string, str string) bool {
 	return false
 }
 
-func scoresToPlayer(scores map[string]playerScore) []playerInfo {
-	var players []playerInfo
+func scoresToPlayer(scores map[string]playerScore) []scoreboardEntry {
+	var scoreboard []scoreboardEntry
 
 	for u, s := range scores {
-		player := playerInfo{
+		sbe := scoreboardEntry{
 			fullName:   "not implemented",
 			githubUser: u,
 			avatarURL:  "https://upload.wikimedia.org/wikipedia/en/8/8b/Avatar_2_logo.jpg?1544987538381",
 			score:      s,
 		}
-		players = append(players, player)
+		scoreboard = append(scoreboard, sbe)
 	}
 
 	// Reverse sort by points.
-	sort.Slice(players, func(i, j int) bool {
-		return players[i].score.points > players[j].score.points
+	sort.Slice(scoreboard, func(i, j int) bool {
+		return scoreboard[i].score.points > scoreboard[j].score.points
 	})
 
-	return players
+	return scoreboard
 }
