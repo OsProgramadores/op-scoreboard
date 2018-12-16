@@ -84,7 +84,7 @@ func main() {
 		scores[c.username] = s
 	}
 
-	spew.Dump(scoresToPlayer(scores))
+	spew.Dump(createScoreboard(scores))
 }
 
 // readChallenges reads all relevant directories under ddir and
@@ -145,7 +145,7 @@ func inSlice(sl []string, str string) bool {
 	return false
 }
 
-func scoresToPlayer(scores map[string]playerScore) []scoreboardEntry {
+func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 	var scoreboard []scoreboardEntry
 
 	for u, s := range scores {
