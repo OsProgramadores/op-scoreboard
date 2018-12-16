@@ -1,5 +1,5 @@
 website_dir = "../op-website-hugo"
-desafios_dir = "../op-desafios"
+challenges_dir = "../op-desafios"
 template_dir = "./templates"
 
 # Ignore these users completely (admins, etc)
