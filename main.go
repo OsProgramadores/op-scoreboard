@@ -58,30 +58,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	scores := map[string]playerScore{}
-
-	for _, c := range challenges {
-		// Make sure user is not ignored.
-		if inSlice(config.IgnoreUsers, c.username) {
-			continue
-		}
-
-		// Compute score for this player/challenge
-		pts, err := calcScores(c, config.Points)
-		if err != nil {
-			log.Fatal(err)
-		}
-		s, ok := scores[c.username]
-		if !ok {
-			s = playerScore{}
-		}
-		s.points += pts
-
-		// Add challenge to list of completed for this player
-		if !inSlice(s.completed, c.challenge) {
-			s.completed = append(s.completed, c.challenge)
-		}
-		scores[c.username] = s
+	scores, err := makePlayerScores(challenges, config.IgnoreUsers, config.Points)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	spew.Dump(createScoreboard(scores))
@@ -105,6 +84,39 @@ func readChallenges(ddir string) ([]playerChallenge, error) {
 		ret = append(ret, playerChallenge{username: username, challenge: challenge})
 	}
 	return ret, nil
+}
+
+// makePlayerScores generates a map of playerScores structures from the list of
+// player/challenges keyed on github username. Any username on the 'ignore'
+// list will be silently ignored. Uses the pointsConfig map to calculate how
+// much each challenge is worth in points.
+func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfig map[string]Point) (map[string]playerScore, error) {
+	scores := map[string]playerScore{}
+
+	for _, c := range challenges {
+		// Make sure user is not ignored.
+		if inSlice(ignore, c.username) {
+			continue
+		}
+
+		// Compute score for this player/challenge
+		pts, err := calcScores(c, pointsConfig)
+		if err != nil {
+			return nil, err
+		}
+		s, ok := scores[c.username]
+		if !ok {
+			s = playerScore{}
+		}
+		s.points += pts
+
+		// Add challenge to list of completed for this player
+		if !inSlice(s.completed, c.challenge) {
+			s.completed = append(s.completed, c.challenge)
+		}
+		scores[c.username] = s
+	}
+	return scores, nil
 }
 
 // parsePath parses a path under challengesDir and returns the user and
