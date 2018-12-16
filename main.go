@@ -33,7 +33,8 @@ type playerChallenge struct {
 
 // playerScore holds scores for one particular player.
 type playerScore struct {
-	score int
+	score     int
+	completed []string
 }
 
 func main() {
@@ -68,11 +69,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if _, ok := scores[c.username]; !ok {
-			scores[c.username] = playerScore{score: 0}
+		s, ok := scores[c.username]
+		if !ok {
+			s = playerScore{score: 0}
 		}
-		s := scores[c.username]
 		s.score += pts
+
+		// Add challenge to list of completed for this player
+		if !inSlice(s.completed, c.challenge) {
+			s.completed = append(s.completed, c.challenge)
+		}
 		scores[c.username] = s
 	}
 
