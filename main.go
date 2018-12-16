@@ -10,8 +10,6 @@ import (
 )
 
 const (
-	// git log --name-only --pretty=format: | grep '^desafio-'| cut -d/ -f1,2 |sort -u | cut -d/ -f2 | sort | uniq -c | sort
-	// -rn
 	// Glob matching desafios.
 	desafiosGlob = "./desafio-*/*"
 )
