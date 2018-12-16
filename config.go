@@ -7,13 +7,6 @@ import (
 	"io/ioutil"
 )
 
-const (
-	configFile = "config.toml"
-
-	// Directory usually under $HOME/.config that holds all configurations.
-	botConfigDir = "pixiebot"
-)
-
 // Point holds the points required for a challenge.
 type Point struct {
 	Value int `toml:"value"`
