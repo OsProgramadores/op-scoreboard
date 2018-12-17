@@ -43,6 +43,8 @@ type scoreboardEntry struct {
 	GithubUser string
 	AvatarURL  string
 	Score      playerScore
+	// True if this is the first user in a group.
+	FirstInGroup bool
 	// True if this user is the last in a group. Typically the last of a number
 	// of people with the same score.
 	LastInGroup bool
@@ -193,6 +195,7 @@ func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 		points := scoreboard[k].Score.Points
 		if points != oldpoints {
 			rank++
+			scoreboard[k].FirstInGroup = true
 			if k != 0 {
 				scoreboard[k-1].LastInGroup = true
 			}

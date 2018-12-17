@@ -9,7 +9,9 @@ markup = "markdown"
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit magna, eu pretium sapien vehicula vitae. Praesent libero dui, dignissim et ultrices vel, accumsan at velit. Suspendisse pretium rhoncus tempor. Cras in libero consectetur, pharetra tellus nec, vestibulum dolor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Sed elementum nisl nibh, ut ultrices massa interdum sit amet. Sed et lectus massa. Nullam molestie dolor eu elit pulvinar, laoreet dictum nisl porttitor. Ut nec ultrices metus. Cras gravida consequat sem, at scelerisque mi iaculis vel. Ut consequat odio dui, vel vestibulum sem egestas et. Nullam semper quis ante a efficitur. Proin odio massa, ultricies et dictum at, tempus vel velit. Praesent viverra sem mi, euismod lobortis lorem luctus et.
 
 {{ range . }}
-## #{{ .Rank }}: {{ .GithubUser }} ({{ .Score.Points }} pontos)
+{{ if .FirstInGroup }}
+## {{ .Rank }}ª posição: {{ .Score.Points }} pontos
+{{ end }}
 
 <table>
 <tbody>
@@ -18,7 +20,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit 
   {{"{{"}}< figure src="https://avatars3.githubusercontent.com/u/36685996?v=4" alt="{{ .GithubUser }}" height="150" width="150" >{{"}}"}}
 </td>
 <td style="vertical-align: top;">
-  <b>Desafios</b><br>
+  <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
   <ul>
   {{ range .Score.Completed }}
     <li>{{ . }}</li>
@@ -27,6 +29,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit 
 </td>
 </tbody>
 </table>
+
+&nbsp;
 
 {{ if .LastInGroup }}<hr>{{ end }}
 {{ end }}
