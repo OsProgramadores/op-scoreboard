@@ -33,10 +33,14 @@ type playerScore struct {
 // scoreboardEntry holds one entry in the scoreboard. It contains all
 // information required to emit output for this player.
 type scoreboardEntry struct {
+	rank       int
 	fullName   string
 	githubUser string
 	avatarURL  string
 	score      playerScore
+	// True if this user is the last in a group. Typically the last of a number
+	// of people with the same score.
+	lastInGroup bool
 }
 
 func main() {
@@ -174,6 +178,24 @@ func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 	sort.Slice(scoreboard, func(i, j int) bool {
 		return scoreboard[i].score.points > scoreboard[j].score.points
 	})
+
+	// Scan scoreboard and add rank and end of group indicators.
+	rank := 0
+	oldpoints := 0
+
+	for k := range scoreboard {
+		points := scoreboard[k].score.points
+		if points != oldpoints {
+			rank++
+			if k != 0 {
+				scoreboard[k-1].lastInGroup = true
+			}
+		}
+		scoreboard[k].rank = rank
+		oldpoints = points
+	}
+	// Last element is always marked as last in group.
+	scoreboard[len(scoreboard)-1].lastInGroup = true
 
 	return scoreboard
 }
