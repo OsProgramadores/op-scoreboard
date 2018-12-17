@@ -3,7 +3,7 @@ challenges_dir = "../op-desafios"
 template_dir = "./templates"
 
 # Ignore these users completely (admins, etc)
-ignore_users = ["marcopaganini"]
+ignore_users = ["bernardinocampos", "marcopaganini", "mpinheir", "qrwteyrutiyoup"]
 
 # Number of points for each of the desafio-NN entries. Specify
 # [points.desafio-NN] for a given entry, with "value" representing the number
