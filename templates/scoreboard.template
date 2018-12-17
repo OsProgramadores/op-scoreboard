@@ -1,0 +1,35 @@
++++
+title = "Top 10 Scores"
+date = "2018-12-12T23:00:00-07:00"
+markup = "markdown"
++++
+
+# Top 10
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit magna, eu pretium sapien vehicula vitae. Praesent libero dui, dignissim et ultrices vel, accumsan at velit. Suspendisse pretium rhoncus tempor. Cras in libero consectetur, pharetra tellus nec, vestibulum dolor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Sed elementum nisl nibh, ut ultrices massa interdum sit amet. Sed et lectus massa. Nullam molestie dolor eu elit pulvinar, laoreet dictum nisl porttitor. Ut nec ultrices metus. Cras gravida consequat sem, at scelerisque mi iaculis vel. Ut consequat odio dui, vel vestibulum sem egestas et. Nullam semper quis ante a efficitur. Proin odio massa, ultricies et dictum at, tempus vel velit. Praesent viverra sem mi, euismod lobortis lorem luctus et.
+
+{{ range . }}
+## #{{ .Rank }}: {{ .GithubUser }} ({{ .Score.Points }} pontos)
+
+<table>
+<tbody>
+<tr>
+<td>
+  {{"{{"}}< figure src="https://avatars3.githubusercontent.com/u/36685996?v=4" alt="{{ .GithubUser }}" height="150" width="150" >{{"}}"}}
+</td>
+<td style="vertical-align: top;">
+  <b>Desafios</b><br>
+  <ul>
+  {{ range .Score.Completed }}
+    <li>{{ . }}</li>
+  {{ end }}
+  </ul>
+</td>
+</tbody>
+</table>
+
+{{ if .LastInGroup }}<hr>{{ end }}
+{{ end }}
+
+&nbsp;
+

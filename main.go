@@ -3,18 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"text/template"
 )
 
 const (
 	// Glob matching challenges directory.
 	// Common syntax is <anything>-<challenge_name_or_number>/author
 	challengesGlob = "./desafio-*/*"
+
+	// Name of the main template file.
+	templateFile = "scoreboard.template"
 )
 
 // playerChallenge holds one user/challenge pair read from the disk.
@@ -26,21 +31,21 @@ type playerChallenge struct {
 // playerScore holds the total number of points and completed challenges for
 // one particular player.
 type playerScore struct {
-	points    int
-	completed []string
+	Points    int
+	Completed []string
 }
 
 // scoreboardEntry holds one entry in the scoreboard. It contains all
 // information required to emit output for this player.
 type scoreboardEntry struct {
-	rank       int
-	fullName   string
-	githubUser string
-	avatarURL  string
-	score      playerScore
+	Rank       int
+	FullName   string
+	GithubUser string
+	AvatarURL  string
+	Score      playerScore
 	// True if this user is the last in a group. Typically the last of a number
 	// of people with the same score.
-	lastInGroup bool
+	LastInGroup bool
 }
 
 func main() {
@@ -67,7 +72,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	spew.Dump(createScoreboard(scores))
+	scoreboard := createScoreboard(scores)
+	//spew.Dump(scoreboard)
+
+	tfile := filepath.Join(config.TemplateDir, templateFile)
+	if err := writeTemplateFile(filepath.Join(config.WebsiteDir, "/content/scores.md"), scoreboard, tfile); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // readChallenges reads all relevant directories under ddir and
@@ -112,11 +123,11 @@ func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfi
 		if !ok {
 			s = playerScore{}
 		}
-		s.points += pts
+		s.Points += pts
 
 		// Add challenge to list of completed for this player
-		if !inSlice(s.completed, c.challenge) {
-			s.completed = append(s.completed, c.challenge)
+		if !inSlice(s.Completed, c.challenge) {
+			s.Completed = append(s.Completed, c.challenge)
 		}
 		scores[c.username] = s
 	}
@@ -166,17 +177,17 @@ func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 
 	for u, s := range scores {
 		sbe := scoreboardEntry{
-			fullName:   "not implemented",
-			githubUser: u,
-			avatarURL:  "https://upload.wikimedia.org/wikipedia/en/8/8b/Avatar_2_logo.jpg?1544987538381",
-			score:      s,
+			FullName:   "not implemented",
+			GithubUser: u,
+			AvatarURL:  "https://upload.wikimedia.org/wikipedia/en/8/8b/Avatar_2_logo.jpg?1544987538381",
+			Score:      s,
 		}
 		scoreboard = append(scoreboard, sbe)
 	}
 
 	// Reverse sort by points.
 	sort.Slice(scoreboard, func(i, j int) bool {
-		return scoreboard[i].score.points > scoreboard[j].score.points
+		return scoreboard[i].Score.Points > scoreboard[j].Score.Points
 	})
 
 	// Scan scoreboard and add rank and end of group indicators.
@@ -184,18 +195,41 @@ func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 	oldpoints := 0
 
 	for k := range scoreboard {
-		points := scoreboard[k].score.points
+		points := scoreboard[k].Score.Points
 		if points != oldpoints {
 			rank++
 			if k != 0 {
-				scoreboard[k-1].lastInGroup = true
+				scoreboard[k-1].LastInGroup = true
 			}
 		}
-		scoreboard[k].rank = rank
+		scoreboard[k].Rank = rank
 		oldpoints = points
 	}
 	// Last element is always marked as last in group.
-	scoreboard[len(scoreboard)-1].lastInGroup = true
+	scoreboard[len(scoreboard)-1].LastInGroup = true
 
 	return scoreboard
+}
+
+func writeTemplateFile(outfile string, scoreboard []scoreboardEntry, tfile string) error {
+	w, err := os.Create(outfile)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+	return writeTemplate(w, scoreboard, tfile)
+}
+
+func writeTemplate(w io.WriteCloser, scoreboard []scoreboardEntry, tfile string) error {
+	_, tbasefile := filepath.Split(tfile)
+
+	t := template.New(tbasefile)
+	t, err := t.ParseFiles(tfile)
+	if err != nil {
+		return fmt.Errorf("writeTemplate: error parsing template: %v", err)
+	}
+	if err = t.Execute(w, scoreboard); err != nil {
+		return fmt.Errorf("writeTemplate: error executing template: %v", err)
+	}
+	return nil
 }
