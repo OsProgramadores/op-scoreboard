@@ -136,22 +136,16 @@ func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfi
 
 // parsePath parses a path under challengesDir and returns the user and
 // designation of that particular challenge (or error). This function assumes
-// that directories under path are laid out as desafio-NN/username
+// that directories under path are laid out as challenge_name/username
 func parsePath(path string) (string, string, error) {
 	elems := strings.Split(path, "/")
 	if len(elems) < 2 {
 		return "", "", fmt.Errorf("invalid file/dir: %q", path)
 	}
 
+	cname := elems[len(elems)-2]
 	username := elems[len(elems)-1]
-	dpath := elems[len(elems)-2]
-
-	// Split desafio-NN
-	d := strings.Split(dpath, "-")
-	if len(d) != 2 {
-		return "", "", fmt.Errorf("invalid directory format: %q", dpath)
-	}
-	return username, d[1], nil
+	return username, cname, nil
 }
 
 // calcScores returns the calcScores for a single username

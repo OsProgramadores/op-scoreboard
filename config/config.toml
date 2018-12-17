@@ -5,29 +5,29 @@ template_dir = "./templates"
 # Ignore these users completely (admins, etc)
 ignore_users = ["marcopaganini"]
 
-# Number of points for each of the desafio-NN entries. Specify [points.NN] for
-# a given entry, with "value" representing the number of points to assign if a
-# given person finished that particular challenge.
+# Number of points for each of the desafio-NN entries. Specify
+# [points.desafio-NN] for a given entry, with "value" representing the number
+# of points to assign if a given person finished that particular challenge.
 
 [points]
-  [points.01]
+  [points.desafio-01]
   value = 10
 
-  [points.02]
+  [points.desafio-02]
   value = 20
 
-  [points.03]
+  [points.desafio-03]
   value = 20
 
-  [points.04]
+  [points.desafio-04]
   value = 20
 
-  [points.05]
+  [points.desafio-05]
   value = 50
 
-  [points.06]
+  [points.desafio-06]
   value = 70
 
-  [points.07]
+  [points.desafio-07]
   value = 50
 
