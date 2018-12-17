@@ -20,3 +20,6 @@
 # Temp files
 *.swp
 *.prof
+
+# Mac files
+.DS_Store

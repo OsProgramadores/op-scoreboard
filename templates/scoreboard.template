@@ -18,7 +18,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit 
   {{"{{"}}< figure src="https://avatars3.githubusercontent.com/u/36685996?v=4" alt="{{ .GithubUser }}" height="150" width="150" >{{"}}"}}
 </td>
 <td style="vertical-align: top;">
-  <b>Desafios</b><br>
+  <b>Desafios completos</b><br>
   <ul>
   {{ range .Score.Completed }}
     <li>{{ . }}</li>
@@ -32,4 +32,3 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit 
 {{ end }}
 
 &nbsp;
-
