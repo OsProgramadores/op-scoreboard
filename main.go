@@ -4,13 +4,13 @@ import (
 	"flag"
 	"fmt"
 	//"github.com/davecgh/go-spew/spew"
+	"html/template"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"text/template"
 )
 
 const (

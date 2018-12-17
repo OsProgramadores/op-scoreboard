@@ -16,8 +16,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit 
 <table>
 <tbody>
 <tr>
-<td>
-  {{"{{"}}< figure src="https://avatars3.githubusercontent.com/u/36685996?v=4" alt="{{ .GithubUser }}" height="150" width="150" >{{"}}"}}
+<td style="vertical-align: top;">
+  <img src="{{ .AvatarURL }}" alt="{{ .GithubUser }}" height="150" width="150">
 </td>
 <td style="vertical-align: top;">
   <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
