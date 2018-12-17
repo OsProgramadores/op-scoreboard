@@ -166,6 +166,7 @@ func inSlice(sl []string, str string) bool {
 	return false
 }
 
+// createScoreboard createa a "scoreboard" slice, ready to be rendered by templates.
 func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 	var scoreboard []scoreboardEntry
 
@@ -205,6 +206,8 @@ func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 	return scoreboard
 }
 
+// writeTemplateFile writes a scoreboard to the default output file using a
+// specified template file.
 func writeTemplateFile(outfile string, scoreboard []scoreboardEntry, tfile string) error {
 	w, err := os.Create(outfile)
 	if err != nil {
@@ -214,7 +217,9 @@ func writeTemplateFile(outfile string, scoreboard []scoreboardEntry, tfile strin
 	return writeTemplate(w, scoreboard, tfile)
 }
 
-func writeTemplate(w io.WriteCloser, scoreboard []scoreboardEntry, tfile string) error {
+// writeTemplate writes a scoreboard to an io.Writer using a specified template
+// file.
+func writeTemplate(w io.Writer, scoreboard []scoreboardEntry, tfile string) error {
 	_, tbasefile := filepath.Split(tfile)
 
 	t := template.New(tbasefile)
