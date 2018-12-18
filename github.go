@@ -115,7 +115,7 @@ func readFromGithub(username string) ([]byte, bool, error) {
 func githubUserInfo(username string) (GithubUserResponse, bool, error) {
 	// Attempt to read from cache.
 	jdata, ok, err := readFromCache(username)
-	if err != nil || !ok {
+	if err != nil {
 		return GithubUserResponse{}, false, err
 	}
 

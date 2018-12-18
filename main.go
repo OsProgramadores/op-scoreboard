@@ -68,6 +68,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if len(challenges) == 0 {
+		log.Fatal("No challenges found. Check the value of challenge_dir in the config file.")
+	}
 
 	scores, err := makePlayerScores(challenges, config.IgnoreUsers, config.Points)
 	if err != nil {
@@ -78,7 +81,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//spew.Dump(scoreboard)
 
 	tfile := filepath.Join(config.TemplateDir, templateFile)
 	if err := writeTemplateFile(filepath.Join(config.WebsiteDir, "/content/scores.md"), scoreboard, tfile); err != nil {
@@ -216,7 +218,9 @@ func createScoreboard(scores map[string]playerScore) ([]scoreboardEntry, error) 
 		oldpoints = points
 	}
 	// Last element is always marked as last in group.
-	scoreboard[len(scoreboard)-1].LastInGroup = true
+	if len(scoreboard) != 0 {
+		scoreboard[len(scoreboard)-1].LastInGroup = true
+	}
 
 	return scoreboard, nil
 }
