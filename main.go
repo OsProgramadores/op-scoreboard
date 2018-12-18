@@ -39,10 +39,10 @@ type playerScore struct {
 // information required to emit output for this player.
 type scoreboardEntry struct {
 	Rank       int
-	FullName   string
 	GithubUser string
-	AvatarURL  string
 	Score      playerScore
+	// Full info from github
+	GithubInfo GithubUserResponse
 	// True if this is the first user in a group.
 	FirstInGroup bool
 	// True if this user is the last in a group. Typically the last of a number
@@ -74,7 +74,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	scoreboard := createScoreboard(scores)
+	scoreboard, err := createScoreboard(scores)
+	if err != nil {
+		log.Fatal(err)
+	}
 	//spew.Dump(scoreboard)
 
 	tfile := filepath.Join(config.TemplateDir, templateFile)
@@ -169,16 +172,25 @@ func inSlice(sl []string, str string) bool {
 }
 
 // createScoreboard createa a "scoreboard" slice, ready to be rendered by templates.
-func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
+func createScoreboard(scores map[string]playerScore) ([]scoreboardEntry, error) {
 	var scoreboard []scoreboardEntry
 
 	for u, s := range scores {
-		sbe := scoreboardEntry{
-			FullName:   "not implemented",
-			GithubUser: u,
-			AvatarURL:  "https://upload.wikimedia.org/wikipedia/en/8/8b/Avatar_2_logo.jpg?1544987538381",
-			Score:      s,
+		githubInfo, ok, err := githubUserInfo(u)
+		if err != nil {
+			return nil, err
 		}
+		// No user on github?
+		if !ok {
+			continue
+		}
+
+		sbe := scoreboardEntry{
+			GithubUser: u,
+			Score:      s,
+			GithubInfo: githubInfo,
+		}
+
 		scoreboard = append(scoreboard, sbe)
 	}
 
@@ -206,7 +218,7 @@ func createScoreboard(scores map[string]playerScore) []scoreboardEntry {
 	// Last element is always marked as last in group.
 	scoreboard[len(scoreboard)-1].LastInGroup = true
 
-	return scoreboard
+	return scoreboard, nil
 }
 
 // writeTemplateFile writes a scoreboard to the default output file using a

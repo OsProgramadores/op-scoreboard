@@ -17,7 +17,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit 
 <tbody>
 <tr>
 <td style="vertical-align: top;">
-  <img src="{{ .AvatarURL }}" alt="{{ .GithubUser }}" height="150" width="150">
+  <img src="{{ .GithubInfo.AvatarURL }}" alt="{{ .GithubUser }}" height="150" width="150">
 </td>
 <td style="vertical-align: top;">
   <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
