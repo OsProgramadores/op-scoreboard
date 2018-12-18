@@ -1,12 +1,28 @@
 +++
-title = "Top 10 Scores"
+title = "Hi-Scores"
 date = "2018-12-12T23:00:00-07:00"
 markup = "markdown"
 +++
 
-# Top 10
+# Hi-Scores
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras fermentum blandit magna, eu pretium sapien vehicula vitae. Praesent libero dui, dignissim et ultrices vel, accumsan at velit. Suspendisse pretium rhoncus tempor. Cras in libero consectetur, pharetra tellus nec, vestibulum dolor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Sed elementum nisl nibh, ut ultrices massa interdum sit amet. Sed et lectus massa. Nullam molestie dolor eu elit pulvinar, laoreet dictum nisl porttitor. Ut nec ultrices metus. Cras gravida consequat sem, at scelerisque mi iaculis vel. Ut consequat odio dui, vel vestibulum sem egestas et. Nullam semper quis ante a efficitur. Proin odio massa, ultricies et dictum at, tempus vel velit. Praesent viverra sem mi, euismod lobortis lorem luctus et.
+A lista abaixo contem a pontuação de todos os participantes que fizeram pelo
+menos um dos [desafios](https://osprogramadores.com/desafios) neste site.
+Apenas os desafios envolvendo programação (02 em diante) são contabilizados.
+Cada desafio possui um número específico de pontos (maiores detalhes dentro de
+cada desafio), e o score de cada participante é a soma de todos os exercícios
+completos.
+
+A contabilização dos pontos é feita automaticamente e periodicamente pelo
+[op-scoreboard](https://github.com/osprogramadores/op-scoreboard).
+
+Apenas desafios com PRs submetidos ao repositório
+[op-desafios](https://github.com/osprogramadores/op-desafios), que tenham sido
+aprovados e mergeado por um dos admins serão contabilizados. Contas removidas
+no github são automaticamente ignoradas para efeito de contagem de pontos,
+mesmo que a resolução do desafio permaneça no repositório.
+
+---
 
 {{ range . }}
 {{ if .FirstInGroup }}
