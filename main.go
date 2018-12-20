@@ -224,8 +224,12 @@ func createScoreboard(scores map[string]playerScore) ([]scoreboardEntry, error) 
 		scoreboard = append(scoreboard, sbe)
 	}
 
-	// Reverse sort by points.
+	// Descending sort by points, ascending sort by username for users
+	// with the same number of points.
 	sort.Slice(scoreboard, func(i, j int) bool {
+		if scoreboard[i].Score.Points == scoreboard[j].Score.Points {
+			return strings.ToLower(scoreboard[i].GithubUser) < strings.ToLower(scoreboard[j].GithubUser)
+		}
 		return scoreboard[i].Score.Points > scoreboard[j].Score.Points
 	})
 
