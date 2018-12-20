@@ -41,7 +41,7 @@ mesmo que a resolução do desafio permaneça no repositório.
   <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
   <ul>
   {{ range .Score.Completed }}
-    <li>{{ . }}</li>
+    <li>{{ .Name }}&nbsp;<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span></li>
   {{ end }}
   </ul>
 </td>

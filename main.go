@@ -28,11 +28,18 @@ type playerChallenge struct {
 	challenge string
 }
 
+// CompletedChallenge holds information about the challenges completed by
+// a user.
+type CompletedChallenge struct {
+	Name   string
+	Points int
+}
+
 // playerScore holds the total number of points and completed challenges for
 // one particular player.
 type playerScore struct {
 	Points    int
-	Completed []string
+	Completed []CompletedChallenge
 }
 
 // scoreboardEntry holds one entry in the scoreboard. It contains all
@@ -41,6 +48,7 @@ type scoreboardEntry struct {
 	Rank       int
 	GithubUser string
 	Score      playerScore
+	Completed  []CompletedChallenge
 	// Full info from github
 	GithubInfo GithubUserResponse
 	// True if this is the first user in a group.
@@ -130,12 +138,18 @@ func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfi
 		if !ok {
 			s = playerScore{}
 		}
-		s.Points += pts
 
 		// Add challenge to list of completed for this player
-		if !inSlice(s.Completed, c.challenge) {
-			s.Completed = append(s.Completed, c.challenge)
+		if !alreadyCompleted(s.Completed, c.challenge) {
+			cc := CompletedChallenge{
+				Name:   c.challenge,
+				Points: pts,
+			}
+			s.Completed = append(s.Completed, cc)
 		}
+		// Add total points.
+		s.Points += pts
+
 		scores[c.username] = s
 	}
 	return scores, nil
@@ -164,6 +178,7 @@ func calcScores(challenge playerChallenge, points map[string]Point) (int, error)
 	return pointvalue.Value, nil
 }
 
+// inSlice returns true if a given string is inside a slice of strings.
 func inSlice(sl []string, str string) bool {
 	for _, v := range sl {
 		if str == v {
@@ -173,7 +188,19 @@ func inSlice(sl []string, str string) bool {
 	return false
 }
 
-// createScoreboard createa a "scoreboard" slice, ready to be rendered by templates.
+// alreadyCompleted returns true if a given challenge is already in a slice of
+// completeChallenge structs.
+func alreadyCompleted(cc []CompletedChallenge, name string) bool {
+	for _, v := range cc {
+		if name == v.Name {
+			return true
+		}
+	}
+	return false
+}
+
+// createScoreboard creates a "scoreboard" slice, ready to be rendered by
+// templates.  We need a slice here to make it easier to sort by points.
 func createScoreboard(scores map[string]playerScore) ([]scoreboardEntry, error) {
 	var scoreboard []scoreboardEntry
 
@@ -190,6 +217,7 @@ func createScoreboard(scores map[string]playerScore) ([]scoreboardEntry, error) 
 		sbe := scoreboardEntry{
 			GithubUser: u,
 			Score:      s,
+			Completed:  s.Completed,
 			GithubInfo: githubInfo,
 		}
 
