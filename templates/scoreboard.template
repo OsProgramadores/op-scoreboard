@@ -35,14 +35,14 @@ mesmo que a resolução do desafio permaneça no repositório.
 <td style="vertical-align: top;">
   <a href="https://github.com/{{ .GithubUser }}">
   <img src="{{ .GithubInfo.AvatarURL }}" alt="{{ .GithubUser }}" height="150" width="150">
-  {{$Githubuser:=.GithubUser}}
+  {{ $GithubUser := .GithubUser }}
   </a>
 </td>
 <td style="vertical-align: top;">
   <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
   <ul>
   {{ range .Score.Completed }}
-    <li><a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $Githubuser }}">{{ .Name }}</a>&nbsp;<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span></li>
+    <li><a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $GithubUser }}">{{ .Name }}</a>&nbsp;<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span></li>
   {{ end }}
   </ul>
 </td>
