@@ -39,7 +39,7 @@ mesmo que a resolução do desafio permaneça no repositório.
   </a>
 </td>
 <td style="vertical-align: top;">
-  <h3 style="margin-top: 0px; margin-left: 5px;">≈</h3>
+  <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
   <ul>
   {{ range .Score.Completed }}
     <li><a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $Githubuser }}">{{ .Name }}</a>&nbsp;<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span></li>
