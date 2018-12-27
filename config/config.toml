@@ -31,3 +31,5 @@ ignore_users = ["bernardinocampos", "marcopaganini", "mpinheir", "qrwteyrutiyoup
   [points.desafio-07]
   value = 50
 
+  [points.desafio-08]
+  value = 30
