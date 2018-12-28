@@ -26,32 +26,36 @@ mesmo que a resolução do desafio permaneça no repositório.
 
 {{ range . }}
 {{ if .FirstInGroup }}
+<div class="row">
 <h2>{{ .Rank }}ª posição: {{ .Score.Points }} pontos</h2>
 {{ end }}
 
-<table>
-<tbody>
-<tr>
-<td style="vertical-align: top;">
-  <a href="https://github.com/{{ .GithubUser }}">
-  <img src="{{ .GithubInfo.AvatarURL }}" alt="{{ .GithubUser }}" height="150" width="150">
-  {{ $GithubUser := .GithubUser }}
-  </a>
-</td>
-<td style="vertical-align: top;">
-  <h3 style="margin-top: 0px; margin-left: 5px;">{{ .GithubUser }}</h3>
-  <ul>
-  {{ range .Score.Completed }}
-    <li><a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $GithubUser }}">{{ .Name }}</a>&nbsp;<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span></li>
-  {{ end }}
-  </ul>
-</td>
-</tbody>
-</table>
+<div class="col-md-4" style="margin-bottom: 20px;">
+  <table>
+  <td style="vertical-align: top;">
+    <a href="https://github.com/{{ .GithubUser }}">
+    <img style="width:150px;height:150px;" src="{{ .GithubInfo.AvatarURL }}" alt="{{ .GithubUser }}">
+    </a>
+  </td>
+  <td style="vertical-align: top; padding-left: 8px;">
+    <h3 style="margin-top: 0px;">{{ .GithubUser }}</h3>
+    {{ $GithubUser := .GithubUser }}
+    {{ range .Score.Completed }}
+      <p style="margin-bottom: 2px;">
+      <a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $GithubUser }}">
+      &#x2605; {{ .Name }}
+      </a>
+      &nbsp;<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span>
+      </p>
+    {{ end }}
+  </td>
+  </table>
+</div>
 
-&nbsp;
-
-{{ if .LastInGroup }}<hr>{{ end }}
+{{ if .LastInGroup }}
+</div>
+<hr>
+{{ end }}
 {{ end }}
 
 &nbsp;
