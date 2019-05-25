@@ -52,26 +52,22 @@ type GithubUserResponse struct {
 	UpdatedAt         time.Time   `json:"updated_at"`
 }
 
-// readFromCache attempts to read data for a given username from the cache
-// files. First, an attempt is made at the negative cache files. If we have a
-// hit there, the user is considered as "non-existent". Otherwise, attempt to
-// read from the regular cache, obeying the usual expiration policy.  Returns
-// the data read from the cache file, a bool indicating whether the user data
-// was found (and is valid) and an error.
-func readFromCache(username string) ([]byte, bool, error) {
-	// Check the negative cache. This is for users who deleted their
-	// accounts on github (previously got a 404). Don't try these
-	// since these requests eat our freebie quota.
-	_, ok, err := cached(negativeCacheFile(username), maxAgeDays*24*time.Hour)
+// readFromNegativeCache attempts to read data for a given username from the
+// negative cache files. If we have a hit there, the user is considered as
+// "non-existent" and attempts to fetch from github should not happen (or it
+// will eat our quota).
+func readFromNegativeCache(username string) (bool, error) {
+	_, cached, err := cached(negativeCacheFile(username), maxAgeDays*24*time.Hour)
 	if err != nil {
-		return nil, false, fmt.Errorf("negative cache read error for %q: %v", username, err)
+		return false, fmt.Errorf("negative cache read error for %q: %v", username, err)
 	}
-	// OK in the negative cache means we should not process it.
-	if ok {
-		return nil, false, nil
-	}
+	return cached, nil
+}
 
-	// Attempt to fetch json from cache.
+// readFromCache attempts to read data for a given username from the cache
+// files. Returns the data read from the cache file, a bool indicating whether
+// the user data was found (and is valid) and an error.
+func readFromCache(username string) ([]byte, bool, error) {
 	jdata, ok, err := cached(cacheFile(username), maxAgeDays*24*time.Hour)
 	if err != nil {
 		return nil, false, fmt.Errorf("cache read error for %q: %v", username, err)
@@ -100,7 +96,7 @@ func readFromGithub(username string) ([]byte, bool, error) {
 	}
 
 	if r.StatusCode < 200 || r.StatusCode > 299 {
-		return nil, false, fmt.Errorf("github returned status %d for user %q", r.StatusCode, username)
+		return nil, false, fmt.Errorf("github returned status %d (%s) for user %q", r.StatusCode, r.Status, username)
 	}
 	jdata, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -109,20 +105,27 @@ func readFromGithub(username string) ([]byte, bool, error) {
 	return jdata, true, nil
 }
 
-// githubUserInfo returns github information about a given username.
-// A boolean flag is returned to mean "user not found in github". All
-// other unexpected conditions return an error.
+// githubUserInfo returns github information about a given username.  A boolean
+// flag is returned to indicate if the user was found (either in the cache or
+// in github).  All other unexpected conditions return an error.
 func githubUserInfo(username string) (GithubUserResponse, bool, error) {
+	// Attempt to read from negative cache (user deleted, etc).
+	// Return a not found response if the user is in the negative cache.
+	cached, err := readFromNegativeCache(username)
+	if err != nil || cached {
+		return GithubUserResponse{}, false, err
+	}
+
 	// Attempt to read from cache.
-	jdata, ok, err := readFromCache(username)
+	jdata, cached, err := readFromCache(username)
 	if err != nil {
 		return GithubUserResponse{}, false, err
 	}
 
 	// Not in cache. Fetch from github.
-	if !ok {
-		jdata, ok, err = readFromGithub(username)
-		if err != nil || !ok {
+	if !cached {
+		jdata, cached, err = readFromGithub(username)
+		if err != nil || !cached {
 			return GithubUserResponse{}, false, err
 		}
 	}
