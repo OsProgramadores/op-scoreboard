@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	//"github.com/davecgh/go-spew/spew"
 	"html/template"
 	"io"
@@ -61,6 +62,8 @@ type scoreboardEntry struct {
 func main() {
 	//log.SetFlags(0)
 	configFile := flag.String("config", "", "configuration file")
+	token := flag.String("token", "", "Github Personal Access Token (optional)")
+	tokenvar := flag.String("tokenvar", "", "Environment variable containing the github Personal Access Token (optional)")
 	flag.Parse()
 
 	r, err := os.Open(*configFile)
@@ -70,6 +73,11 @@ func main() {
 	config, err := parseConfig(r)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// If token not set and we have tokenvar, set it.
+	if *token == "" {
+		*token = os.Getenv(*tokenvar)
 	}
 
 	challenges, err := readChallenges(config.ChallengesDir)
@@ -85,7 +93,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	scoreboard, err := createScoreboard(scores)
+	scoreboard, err := createScoreboard(scores, *token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -201,11 +209,11 @@ func alreadyCompleted(cc []CompletedChallenge, name string) bool {
 
 // createScoreboard creates a "scoreboard" slice, ready to be rendered by
 // templates.  We need a slice here to make it easier to sort by points.
-func createScoreboard(scores map[string]playerScore) ([]scoreboardEntry, error) {
+func createScoreboard(scores map[string]playerScore, token string) ([]scoreboardEntry, error) {
 	var scoreboard []scoreboardEntry
 
 	for u, s := range scores {
-		githubInfo, ok, err := githubUserInfo(u)
+		githubInfo, ok, err := githubUserInfo(u, token)
 		if err != nil {
 			return nil, err
 		}

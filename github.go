@@ -3,18 +3,19 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
+
+	backoff "github.com/cenkalti/backoff/v4"
 )
 
 const (
-	// Maximum time an item is considered valid in the cache.
-	maxAgeDays = 30
-	cacheDir   = "/tmp/scoreboard.cache"
+	// Maximum number of retries on Github API.
+	maxTries = 10
 )
 
 // GithubUserResponse holds information about a particular github user.
@@ -52,53 +53,70 @@ type GithubUserResponse struct {
 	UpdatedAt         time.Time   `json:"updated_at"`
 }
 
-// readFromNegativeCache attempts to read data for a given username from the
-// negative cache files. If we have a hit there, the user is considered as
-// "non-existent" and attempts to fetch from github should not happen (or it
-// will eat our quota).
-func readFromNegativeCache(username string) (bool, error) {
-	_, cached, err := cached(negativeCacheFile(username), maxAgeDays*24*time.Hour)
-	if err != nil {
-		return false, fmt.Errorf("negative cache read error for %q: %v", username, err)
-	}
-	return cached, nil
-}
+// readFromGithub reads data from a user using the github API (v3).  Returns
+// the data read from Github (json), a boolean indicating whether we found a
+// valid user or not, and an error.
+func readFromGithub(username, token string) ([]byte, bool, error) {
+	var (
+		resp *http.Response
+		try  int
+		err  error
+	)
 
-// readFromCache attempts to read data for a given username from the cache
-// files. Returns the data read from the cache file, a bool indicating whether
-// the user data was found (and is valid) and an error.
-func readFromCache(username string) ([]byte, bool, error) {
-	jdata, ok, err := cached(cacheFile(username), maxAgeDays*24*time.Hour)
+	log.Printf("Fetching data for github user %s", username)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.github.com/users/"+username, nil)
 	if err != nil {
-		return nil, false, fmt.Errorf("cache read error for %q: %v", username, err)
+		return nil, false, fmt.Errorf("error forming GET request for user %q: %v", username, err)
 	}
-	if !ok {
-		return nil, false, nil
+	if token != "" {
+		req.Header.Add("Authorization", "token "+token)
 	}
-	return jdata, true, nil
-}
 
-// readFromGithub reads data from a user using the github API (v3). If a 404 is
-// returned, we save the user to the negative cache to avoid future accesses to
-// this user. Returns the data read from Github (json), a boolean indicating
-// whether we found a valid user or not, and an error.
-func readFromGithub(username string) ([]byte, bool, error) {
-	r, err := http.Get("https://api.github.com/users/" + username)
-	if err != nil {
-		return nil, false, fmt.Errorf("error retrieving github user %q: %v", username, err)
-	}
-	// Save username in our negative cache if we get a 404.
-	if r.StatusCode == http.StatusNotFound {
-		if err = cachesave(negativeCacheFile(username), []byte{}); err != nil {
-			return nil, false, fmt.Errorf("negative cache write error for %q: %v", username, err)
+	// Returning nil will cause an exit from the Retry function. The 'err' variable
+	// indicates an error that needs to be handled outside the function.
+	backoff.Retry(func() error {
+		try++
+		err = nil
+
+		if try >= maxTries {
+			err = fmt.Errorf("maximum number of retries reached (%d), user: %s", maxTries, username)
+			return nil
 		}
+
+		resp, err = client.Do(req)
+		if err != nil {
+			m := fmt.Sprintf("error on GET for github user %q: %v (attempt %d)", username, err, try)
+			log.Print(m)
+			return errors.New(m)
+		}
+
+		// Return immediately if we can't find the github user. We set err to
+		// nil since we don't want to abort the entire program for this.
+		if resp.StatusCode == 404 {
+			log.Printf("Github user not found: %s", username)
+			return nil
+		}
+
+		// Retriable codes.
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			m := fmt.Sprintf("github returned status %d (%s) for user %q (attempt %d)", resp.StatusCode, resp.Status, username, try)
+			log.Print(m)
+			return errors.New(m)
+		}
+		return nil
+	}, backoff.NewExponentialBackOff())
+
+	if err != nil {
+		return nil, false, err
+	}
+
+	// Indicate invalid user (but no error) if we got a 404. This is ugly.
+	if resp.StatusCode == 404 {
 		return nil, false, nil
 	}
 
-	if r.StatusCode < 200 || r.StatusCode > 299 {
-		return nil, false, fmt.Errorf("github returned status %d (%s) for user %q", r.StatusCode, r.Status, username)
-	}
-	jdata, err := ioutil.ReadAll(r.Body)
+	jdata, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, false, fmt.Errorf("error reading http body for user %q: %v", username, err)
 	}
@@ -106,32 +124,15 @@ func readFromGithub(username string) ([]byte, bool, error) {
 }
 
 // githubUserInfo returns github information about a given username.  A boolean
-// flag is returned to indicate if the user was found (either in the cache or
-// in github).  All other unexpected conditions return an error.
-func githubUserInfo(username string) (GithubUserResponse, bool, error) {
-	// Attempt to read from negative cache (user deleted, etc).
-	// Return a not found response if the user is in the negative cache.
-	cached, err := readFromNegativeCache(username)
-	if err != nil || cached {
+// flag is returned to indicate if the user was found.
+func githubUserInfo(username string, token string) (GithubUserResponse, bool, error) {
+	jdata, ok, err := readFromGithub(username, token)
+	// Error or user not found?
+	if err != nil || !ok {
 		return GithubUserResponse{}, false, err
 	}
 
-	// Attempt to read from cache.
-	jdata, cached, err := readFromCache(username)
-	if err != nil {
-		return GithubUserResponse{}, false, err
-	}
-
-	// Not in cache. Fetch from github.
-	if !cached {
-		jdata, cached, err = readFromGithub(username)
-		if err != nil || !cached {
-			return GithubUserResponse{}, false, err
-		}
-	}
-
-	// Unmarshal the JSON and run very basic checks. If everything OK, save
-	// this to the cache.
+	// Unmarshal the JSON and run some basic checks.
 	var resp GithubUserResponse
 	if err := json.Unmarshal(jdata, &resp); err != nil {
 		return GithubUserResponse{}, false, fmt.Errorf("error decoding github data: %v", err)
@@ -139,62 +140,6 @@ func githubUserInfo(username string) (GithubUserResponse, bool, error) {
 	if resp.Login == "" {
 		return GithubUserResponse{}, false, fmt.Errorf("got bad json from github: %s", string(jdata))
 	}
-	if err := cachesave(cacheFile(username), jdata); err != nil {
-		return GithubUserResponse{}, false, fmt.Errorf("cache write error for %q: %v", username, err)
-	}
 
 	return resp, true, nil
-}
-
-// cached returns the data cached in a file. A duration specifies for how long
-// data in the cache is valid. Three values are returned: a slice of bytes
-// containing the data in the cache file (if considered valid), a boolean
-// indicating whether the data is valid or not (expired, etc), and an error.
-func cached(cachefile string, exp time.Duration) ([]byte, bool, error) {
-	fi, err := os.Stat(cachefile)
-	if err != nil {
-		// Return no error on not exists condition (use the boolean to signal).
-		if os.IsNotExist(err) {
-			err = nil
-		}
-		return nil, false, err
-	}
-	// Is this file older than maxAgeDays?
-	if time.Now().After(fi.ModTime().Add(exp)) {
-		return nil, false, nil
-	}
-
-	data, err := ioutil.ReadFile(cachefile)
-	if err != nil {
-		return nil, false, err
-	}
-
-	return data, true, err
-}
-
-// cachesave saves cache data into a file, creating the required directory
-// structure, if needed.
-func cachesave(cachefile string, data []byte) error {
-	dir, _ := filepath.Split(cachefile)
-
-	// Create the entire directory structure (if needed).
-	if err := os.MkdirAll(dir, 0777); err != nil {
-		return err
-	}
-
-	if err := ioutil.WriteFile(cachefile, data, 0777); err != nil {
-		return err
-	}
-	return nil
-}
-
-// cacheFile returns the name of the cache file for a given user.
-func cacheFile(username string) string {
-	return filepath.Join(cacheDir, username+".cache")
-}
-
-// negativeCachefile returns the name of the negative cache file for a given
-// user.
-func negativeCacheFile(username string) string {
-	return filepath.Join(cacheDir, username+".negcache")
 }
