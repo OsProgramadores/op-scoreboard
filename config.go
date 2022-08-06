@@ -2,9 +2,10 @@ package main
 
 import (
 	"errors"
-	"github.com/BurntSushi/toml"
 	"io"
 	"io/ioutil"
+
+	"github.com/BurntSushi/toml"
 )
 
 // Point holds the points required for a challenge.
