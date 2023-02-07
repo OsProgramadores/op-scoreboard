@@ -19,11 +19,12 @@ ignore_users = ["bernardinocampos", "marcopaganini", "mpinheir", "qrwteyrutiyoup
   [points.desafio-03]
   value = 20
 
+  # The challenges 4 and 5 are obsolete so they do not count as points
   [points.desafio-04]
-  value = 20
+  value = 0
 
   [points.desafio-05]
-  value = 50
+  value = 0
 
   [points.desafio-06]
   value = 70
