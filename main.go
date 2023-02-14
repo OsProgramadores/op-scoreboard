@@ -60,10 +60,13 @@ type scoreboardEntry struct {
 }
 
 func main() {
-	//log.SetFlags(0)
+	// Log file name and line number.
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	configFile := flag.String("config", "", "configuration file")
 	token := flag.String("token", "", "Github Personal Access Token (optional)")
 	tokenvar := flag.String("tokenvar", "", "Environment variable containing the github Personal Access Token (optional)")
+	githubAccess := flag.Bool("github", true, "Use github for user details (set to false for testing)")
 	flag.Parse()
 
 	r, err := os.Open(*configFile)
@@ -74,6 +77,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("Config: %+v\n", config)
 
 	// If token not set and we have tokenvar, set it.
 	if *token == "" {
@@ -93,7 +97,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	scoreboard, err := createScoreboard(scores, *token)
+	// Log the total scores
+	for user, score := range scores {
+		log.Printf("Final score: %s: %+v", user, score)
+	}
+
+	scoreboard, err := createScoreboard(scores, *token, *githubAccess)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,6 +129,7 @@ func readChallenges(ddir string) ([]playerChallenge, error) {
 			return nil, err
 		}
 		ret = append(ret, playerChallenge{username: username, challenge: challenge})
+		log.Printf("Challenge found: username=%s, challenge=%v\n", username, challenge)
 	}
 	return ret, nil
 }
@@ -134,6 +144,7 @@ func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfi
 	for _, c := range challenges {
 		// Make sure user is not ignored.
 		if inSlice(ignore, c.username) {
+			log.Printf("Ignored user: %s", c.username)
 			continue
 		}
 
@@ -154,6 +165,7 @@ func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfi
 				Points: pts,
 			}
 			s.Completed = append(s.Completed, cc)
+			log.Printf("Adding score to user %s: %+v", c.username, cc)
 		}
 		// Add total points.
 		s.Points += pts
@@ -209,17 +221,31 @@ func alreadyCompleted(cc []CompletedChallenge, name string) bool {
 
 // createScoreboard creates a "scoreboard" slice, ready to be rendered by
 // templates.  We need a slice here to make it easier to sort by points.
-func createScoreboard(scores map[string]playerScore, token string) ([]scoreboardEntry, error) {
-	var scoreboard []scoreboardEntry
+func createScoreboard(scores map[string]playerScore, token string, githubAccess bool) ([]scoreboardEntry, error) {
+	var (
+		githubInfo GithubUserResponse
+		scoreboard []scoreboardEntry
+		ok         bool
+		err        error
+	)
 
 	for u, s := range scores {
-		githubInfo, ok, err := githubUserInfo(u, token)
-		if err != nil {
-			return nil, err
+		// If no github access (E.g. when debugging), generate a fake
+		// githubInfo structure. This allows the program to be used
+		// without github quota issues.
+		githubInfo = GithubUserResponse{
+			AvatarURL: "http://localhost",
+			Login:     u,
 		}
-		// No user on github?
-		if !ok {
-			continue
+		if githubAccess {
+			githubInfo, ok, err = githubUserInfo(u, token)
+			if err != nil {
+				return nil, err
+			}
+			// No user on github?
+			if !ok {
+				continue
+			}
 		}
 
 		sbe := scoreboardEntry{
