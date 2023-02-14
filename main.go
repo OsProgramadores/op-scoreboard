@@ -165,7 +165,6 @@ func makePlayerScores(challenges []playerChallenge, ignore []string, pointsConfi
 				Points: pts,
 			}
 			s.Completed = append(s.Completed, cc)
-			log.Printf("Adding score to user %s: %+v", c.username, cc)
 		}
 		// Add total points.
 		s.Points += pts
