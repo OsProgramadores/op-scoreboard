@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -116,7 +116,7 @@ func readFromGithub(username, token string) ([]byte, bool, error) {
 		return nil, false, nil
 	}
 
-	jdata, err := ioutil.ReadAll(resp.Body)
+	jdata, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, false, fmt.Errorf("error reading http body for user %q: %v", username, err)
 	}

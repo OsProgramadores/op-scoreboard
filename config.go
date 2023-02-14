@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 
 	"github.com/BurntSushi/toml"
 )
@@ -38,7 +37,7 @@ type Config struct {
 // containing the TOML config read from disk and performs basic sanity checking
 // of configuration items.
 func parseConfig(r io.Reader) (Config, error) {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return Config{}, err
 	}
