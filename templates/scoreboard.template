@@ -7,10 +7,10 @@ markup = "markdown"
 # Hi-Scores
 
 A lista abaixo contem a pontuação de todos os participantes que fizeram pelo
-menos um dos [desafios]({{< ref "/desafios" >}}) neste site.  Apenas os
-desafios envolvendo programação (02 em diante) são contabilizados.  Cada
-desafio possui um número específico de pontos (maiores detalhes dentro de cada
-desafio), e o score de cada participante é a soma de todos os exercícios
+menos um dos [desafios](https://osprogramadores.com/desafios) neste site.
+Apenas os desafios envolvendo programação (02 em diante) são contabilizados.
+Cada desafio possui um número específico de pontos (maiores detalhes dentro de
+cada desafio), e o score de cada participante é a soma de todos os exercícios
 completos.
 
 A contabilização dos pontos é feita automaticamente e periodicamente pelo
