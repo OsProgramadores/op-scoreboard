@@ -7,10 +7,10 @@ markup = "markdown"
 # Hi-Scores
 
 A lista abaixo contem a pontuação de todos os participantes que fizeram pelo
-menos um dos [desafios](https://osprogramadores.com/desafios) neste site.
-Apenas os desafios envolvendo programação (02 em diante) são contabilizados.
-Cada desafio possui um número específico de pontos (maiores detalhes dentro de
-cada desafio), e o score de cada participante é a soma de todos os exercícios
+menos um dos [desafios]({{< ref "/desafios" >}}) neste site.  Apenas os
+desafios envolvendo programação (02 em diante) são contabilizados.  Cada
+desafio possui um número específico de pontos (maiores detalhes dentro de cada
+desafio), e o score de cada participante é a soma de todos os exercícios
 completos.
 
 A contabilização dos pontos é feita automaticamente e periodicamente pelo
@@ -27,33 +27,33 @@ mesmo que a resolução do desafio permaneça no repositório.
 {{ range . }}
 {{ if .FirstInGroup }}
 <div class="row">
-  <div class="col-md-12">
-    <h2>{{ .Rank }}ª posição: {{ .Score.Points }} pontos</h2>
-  </div>
+<div class="col-md-12">
+<h2>{{ .Rank }}ª posição: {{ .Score.Points }} pontos</h2>
+</div>
 {{ end }}
 <div class="col-md-3" style="text-align:center; margin-bottom: 20px;">
-  <!-- Username and Avatar. Avatar must be size limited since image sizes vary. -->
-  <a href="https://github.com/{{ .GithubUser }}">
-    <img style="width:150px; height:150px; margin-bottom:10px;" src="{{ .GithubInfo.AvatarURL }}" alt="{{ .GithubUser }}">
-  </a>
+<!-- Username and Avatar. Avatar must be size limited since image sizes vary. -->
+<a href="https://github.com/{{ .GithubUser }}">
+<img style="width:150px; height:150px; margin-bottom:10px;" src="{{ .GithubInfo.AvatarURL }}" alt="{{ .GithubUser }}">
+</a>
 
-  <!-- Button -->
-  <div class="dropdown">
-    <button type="button" id="button-{{ .GithubUser }}" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-      {{ .GithubUser }}<span class="caret"></span>
-    </button>
+<!-- Button -->
+<div class="dropdown">
+<button type="button" id="button-{{ .GithubUser }}" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+{{ .GithubUser }}<span class="caret"></span>
+</button>
 
-    <ul class="dropdown-menu" aria-labelledby="button-{{ .GithubUser }}" style="width:100px;">
-      {{ $GithubUser := .GithubUser }}
-      {{ range .Score.Completed }}
-      <li><a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $GithubUser }}">
-        {{ .Name }}
-        <span style="font-style:italic; font-size:80%">(+{{ .Points }})</span>
-        </a>
-      </li>
-      {{ end }}
-    </ul>
-  </div>
+<ul class="dropdown-menu" aria-labelledby="button-{{ .GithubUser }}" style="width:100px;">
+{{ $GithubUser := .GithubUser }}
+{{ range .Score.Completed }}
+<li><a href="https://github.com//OsProgramadores/op-desafios/tree/master/{{ .Name }}/{{ $GithubUser }}">
+{{ .Name }}
+<span style="font-style:italic; font-size:80%">(+{{ .Points }})</span>
+</a>
+</li>
+{{ end }}
+</ul>
+</div>
 </div>
 
 {{ if .LastInGroup }}
