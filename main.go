@@ -298,6 +298,11 @@ func writeTemplateFile(outfile string, scoreboard []scoreboardEntry, tfile strin
 		return err
 	}
 	defer w.Close()
+
+	// Debug output
+	log.Printf("--- new content/scores.md contents ---")
+	writeTemplate(os.Stderr, scoreboard, tfile)
+
 	return writeTemplate(w, scoreboard, tfile)
 }
 
